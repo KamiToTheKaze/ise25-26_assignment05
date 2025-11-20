@@ -11,3 +11,14 @@ Feature: Points of Sale Management
     Then the POS list should contain the same elements in the same order
 
 # TODO: Add new scenario "Update one of three existing POS"
+Feature: POS Update
+  This feature allows users to update existing points of sale (POS).
+
+  Scenario: Update one of three existing POS
+    Given the following POS exist:
+      | name        | description         | type | campus    | street       | houseNumber | postalCode | city       |
+      | Kaffee A    | Alt A   | CAFE | ALTSTADT  | Hauptstraße  | 1           | 69117      | Heidelberg |
+      | Kaffee B    | Alt B   | CAFE | ALTSTADT  | Nebenstraße  | 2           | 69117      | Heidelberg |
+      | Kaffee C    | Alt C   | CAFE | ALTSTADT  | Keinestraße  | 3           | 69117      | Heidelberg |
+    When I update the description of POS "Kaffee B" to "Neu B"
+    Then the POS "Kaffee B" description should be "Neu B"

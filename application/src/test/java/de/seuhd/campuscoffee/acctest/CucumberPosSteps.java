@@ -1,15 +1,18 @@
 package de.seuhd.campuscoffee.acctest;
 
+import de.seuhd.campuscoffee.TestUtils;
 import de.seuhd.campuscoffee.api.dtos.PosDto;
 import de.seuhd.campuscoffee.domain.model.CampusType;
 import de.seuhd.campuscoffee.domain.model.PosType;
 import de.seuhd.campuscoffee.domain.ports.PosService;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.*;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.spring.CucumberContextConfiguration;
 import io.restassured.RestAssured;
+import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -92,7 +95,13 @@ public class CucumberPosSteps {
     }
 
     // TODO: Add Given step for new scenario
-
+    @Given("the following POS exist:")
+    public void the_following_pos_exist(DataTable table) {
+        List<Map<String, String>> rows = table.asMaps(String.class, String.class);
+        for (Map<String, String> row : rows) {
+            TestUtils.createPos((List<PosDto>) row);
+        }
+    }
     // When -----------------------------------------------------------------------
 
     @When("I insert POS with the following elements")
@@ -102,6 +111,25 @@ public class CucumberPosSteps {
     }
 
     // TODO: Add When step for new scenario
+    @When("I update the description of POS with name B to neu B")
+    public void updateDescriptionByName(String name, String newDescription) {
+        PosDto pos = retrievePosByName(name);
+        Assertions.assertNotNull(pos, "POS with name " + name + " not found");
+        PosDto updated = PosDto.builder() //von hier
+                .id(pos.id())
+                .name(pos.name())
+                .description(newDescription)
+                .type(pos.type())
+                .campus(pos.campus())
+                .street(pos.street())
+                .houseNumber(pos.houseNumber())
+                .postalCode(pos.postalCode())
+                .city(pos.city())
+                .build(); //bis hier per Github Copilot gefixt
+        List<PosDto> result = updatePos(List.of(updated));
+        updatedPos = result.getFirst();
+        assertThat(updatedPos.description()).isEqualTo(newDescription);
+    }
 
     // Then -----------------------------------------------------------------------
 
@@ -114,4 +142,10 @@ public class CucumberPosSteps {
     }
 
     // TODO: Add Then step for new scenario
+    @Then("the POS with name B should have description neu B")
+    public void posWithNameShouldHaveDescription(String name, String expectedDescription) {
+        PosDto updated = retrievePosByName(name);
+        assertThat(updated).isNotNull();
+        assertThat(updated.description()).isEqualTo(expectedDescription);
+    }
 }
